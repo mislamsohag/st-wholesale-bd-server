@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const jwt = require('jsonwebtoken');
 app.use(express.json())
 
 require('dotenv').config();
@@ -21,6 +22,18 @@ async function run() {
 
         const productCollection = client.db('wholsaleProduct').collection('products');
 
+        //email varification by jwt api
+        app.post("/login", async (req, res) => {
+            const email = req.body;
+            // console.log(email);
+            const token = jwt.sign(email, process.env.EMAIL_ENCRIPT_KEY);
+            // console.log(token);
+            res.send({ token });
+
+
+        })
+
+        //product upload api
         app.post("/uploadItem", async (req, res) => {
             const product = req.body;
             console.log(product);
@@ -34,7 +47,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.send('This is st-wholesale-bd yayh!')
 })
 
 app.listen(port, () => {
