@@ -29,16 +29,23 @@ async function run() {
             const token = jwt.sign(email, process.env.EMAIL_ENCRIPT_KEY);
             // console.log(token);
             res.send({ token });
-
-
         })
 
         //product upload api
         app.post("/uploadItem", async (req, res) => {
             const product = req.body;
-            console.log(product);
-            const result = await productCollection.insertOne(product);
-            res.send({ success: 'newItem Uploaded' });
+            // console.log(product);
+            const tokenInfo = req.headers.authorization;
+            // console.log(tokenInfo)
+
+            const [email, accessToken] = tokenInfo.split(" ");
+            const decoded = verifyToken(accessToken);
+            if (email === decoded.email) {
+                const result = await productCollection.insertOne(product);
+                res.send({ success: 'newItem Uploaded' });
+            } else {
+                res.send({ success: 'UnAuthorized Access' });
+            }
         })
     } finally {
         //   await client.close();
@@ -53,3 +60,17 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
+
+
+function verifyToken(token) {
+    let email;
+    jwt.verify(token, process.env.EMAIL_ENCRIPT_KEY, function (error, decoded) {
+        if (error) {
+            email = 'Invalid Email';
+        }
+        if (decoded) {
+            email = decoded;
+        }
+    });
+    return email;
+}
