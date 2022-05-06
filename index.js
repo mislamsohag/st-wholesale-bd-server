@@ -41,12 +41,30 @@ async function run() {
             const [email, accessToken] = tokenInfo.split(" ");
             const decoded = verifyToken(accessToken);
             if (email === decoded.email) {
-                const result = await productCollection.insertOne(product);
-                res.send({ success: 'newItem Uploaded' });
+                if (!product.name || !product.price) {
+                    return res.send({ success: false, error: "Please fill the all information" })
+                } else {
+                    const result = await productCollection.insertOne(product);
+                    res.send({ success: true, message: "New Product Uploaded" });
+                }
             } else {
                 res.send({ success: 'UnAuthorized Access' });
             }
-        })
+        });
+
+        //product collection or finding from database
+        app.get('/ourProducts', async (req, res) => {
+            const limit = Number(req.query.limit); //for data showing limitation by query selector
+            const pageNumber = Number(req.query.pageNumber);
+
+            const products = await productCollection.find({}).skip(limit * pageNumber).limit(limit).toArray();
+
+            // const count=await productCollection.estimatedDocumentCount();
+
+            res.send(products);
+        });
+
+
     } finally {
         //   await client.close();
     }
