@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
+const objectId = require('mongodb').ObjectId; //এটা করতে হবে ডিলিটের জন্য 
 app.use(express.json())
 
 require('dotenv').config();
@@ -55,14 +56,23 @@ async function run() {
         //product collection or finding from database
         app.get('/ourProducts', async (req, res) => {
             const limit = Number(req.query.limit); //for data showing limitation by query selector
+
             const pageNumber = Number(req.query.pageNumber);
-
             const products = await productCollection.find({}).skip(limit * pageNumber).limit(limit).toArray();
-
-            // const count=await productCollection.estimatedDocumentCount();
 
             res.send(products);
         });
+
+
+        //Delete Product api
+        app.delete('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: objectId };   //query করে আইডি ধরে ডিলিটের জন্য const objectId = require('mongodb').ObjectId; এটি ইমপোরর্ট করতে হবে।
+            const result = await productCollection.deleteOne(query)
+            res.send(result)
+
+        })
+
 
 
     } finally {
