@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
-const objectId = require('mongodb').ObjectId; //এটা করতে হবে ডিলিটের জন্য 
+const ObjectId = require('mongodb').ObjectId; //এটা করতে হবে ডিলিটের জন্য 
 app.use(express.json())
 
 require('dotenv').config();
@@ -63,11 +63,35 @@ async function run() {
             res.send(products);
         });
 
-
-        //Delete Product api
-        app.delete('/product/:id', async (req, res) => {
+        //Products Update API
+        app.get('/ourProducts/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: objectId };   //query করে আইডি ধরে ডিলিটের জন্য const objectId = require('mongodb').ObjectId; এটি ইমপোরর্ট করতে হবে।
+            const query = { _id: ObjectId };
+            const result = await productCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.put('/ourProducts/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedProduct = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updtedDoc = {
+                $set: {
+                    image: updatedProduct.image,
+                    description: updatedProduct.description,
+                    quantity: updatedProduct.quantity,
+                    price: updatedProduct.price,
+                }
+            };
+            const result = await productCollection.updateOne(filter, updtedDoc, options);
+            res.send(result);
+        })
+        // image, description, quantity, price
+        //Delete Product api
+        app.delete('/ourProducts/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };   //query করে আইডি ধরে ডিলিটের জন্য const ObjectId = require('mongodb').ObjectId; এটি ইমপোরর্ট করতে হবে।
             const result = await productCollection.deleteOne(query)
             res.send(result)
 
