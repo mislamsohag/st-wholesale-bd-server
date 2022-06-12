@@ -63,6 +63,16 @@ async function run() {
             res.send(products);
         });
 
+        //product add to secrate myItem
+        app.get('/ourProducts', async (req, res) => {
+            const email = req.query;
+            console.log(email);
+            const query = {};
+            const cursor = productCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        })
+
         //Products Update API
         app.get('/ourProducts/:id', async (req, res) => {
             const id = req.params.id;
